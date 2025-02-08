@@ -1,10 +1,11 @@
-const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 require('dotenv').config(); // Para cargar las variables de entorno desde un archivo .env
 
 // Crear el cliente
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection(); // Inicializar almacenamiento de comandos
+client.slashCommands = new Collection(); // Para el comando /comandos
 
 // Cargar los comandos slash desde la carpeta "slashCommands"
 const commandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
