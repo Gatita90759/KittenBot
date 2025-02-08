@@ -23,7 +23,7 @@ module.exports = {
 
     // Agregar los comandos al embed como campos
     clientCommands.forEach((cmd) => {
-      embed.addFields({ name: `\`/${cmd.name}\``, value: cmd.description, inline: false });
+      embed.addFields({ name: `\`/${cmd.data.name}\``, value: cmd.data.description, inline: false });
     });
 
     // Responder a la interacción con el embed
