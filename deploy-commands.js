@@ -6,13 +6,6 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 client.commands = new Collection(); // Para almacenar comandos normales
 client.slashCommands = []; // Para almacenar comandos slash
 
-// Cargar todos los comandos normales de la carpeta "commands"
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.name, command);
-}
-
 
 const { REST, Routes } = require('discord.js');
 const fs = require('fs');
@@ -46,26 +39,6 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 // Evento: Bot listo
 client.once('ready', () => {
   console.log('¡El bot está listo!');
-});
-
-// Evento: Comandos normales (!comando)
-client.on('messageCreate', (message) => {
-  if (message.author.bot || !message.content.startsWith('!')) return;
-
-  const args = message.content.slice(1).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-
-  const command = client.commands.get(commandName);
-  if (!command) {
-    return message.reply('Ese comando no existe, pon !comandos para ver los comandos :v');
-  }
-
-  try {
-    command.execute(message, args, client.commands);
-  } catch (error) {
-    console.error(error);
-    message.reply('Hubo un error xd');
-  }
 });
 
 // Evento: Comandos slash
