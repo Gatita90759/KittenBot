@@ -1,5 +1,6 @@
-{
-  TOKEN=process.env.TOKEN //TU_TOKEN_DEL_BOT
-  CLIENT_ID=process.env.CLIENT_ID //TU_ID_DEL_CLIENTE
-  GUILD_ID= //ID_DEL_SERVIDOR_OPCIONAL
-}
+
+module.exports = {
+  TOKEN: process.env.TOKEN,
+  CLIENT_ID: process.env.CLIENT_ID,
+  GUILD_ID: process.env.GUILD_ID
+};
