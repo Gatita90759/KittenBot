@@ -6,11 +6,11 @@ require('dotenv').config(); // Para cargar las variables de entorno desde un arc
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection(); // Inicializar almacenamiento de comandos
 
-// Cargar los comandos slash desde la carpeta "commands"
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+// Cargar los comandos slash desde la carpeta "slashCommands"
+const commandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
 // Cargar comandos
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
+  const command = require(`./slashCommands/${file}`);
   if (command.data) {
     client.commands.set(command.data.name, command);
   }
