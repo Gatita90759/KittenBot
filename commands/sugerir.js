@@ -2,16 +2,16 @@
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-  name: 'sugerir',
+  name: 'sugerencia',
   description: 'Envía una sugerencia para el servidor',
   execute: async (message, args) => {
     // Verificar si hay una sugerencia
     if (!args.length) {
-      return message.reply('¡Debes escribir una sugerencia!');
+      return message.reply('¡Debes escribir una sugerencia para que funcione!');
     }
 
     const sugerencia = args.join(' ');
-    
+    c
     const embed = new EmbedBuilder()
       .setTitle('📝 Nueva Sugerencia')
       .setDescription(sugerencia)
