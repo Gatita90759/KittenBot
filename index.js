@@ -40,6 +40,7 @@ client.once('ready', () => {
 // Manejar comandos normales
 client.on('messageCreate', (message) => {
   if (message.author.bot || !message.content.startsWith('!')) return;
+  if (message.type === 'APPLICATION_COMMAND') return; // Ignorar comandos slash
 
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
@@ -57,7 +58,7 @@ client.on('messageCreate', (message) => {
 
 // Manejar comandos slash
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isCommand()) return;
+  if (!interaction.isChatInputCommand()) return;
 
   const command = client.slashCommands.get(interaction.commandName);
   if (!command) return;
