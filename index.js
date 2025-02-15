@@ -38,9 +38,12 @@ client.once('ready', () => {
 });
 
 // Manejar comandos normales
-client.on('messageCreate', (message) => {
+client.on('messageCreate', async (message) => {
+  // Ignorar mensajes de bots y mensajes que no empiecen con el prefijo
   if (message.author.bot || !message.content.startsWith('!')) return;
-  if (message.type === 'APPLICATION_COMMAND') return; // Ignorar comandos slash
+  
+  // Ignorar interacciones de comandos slash
+  if (message.interaction) return;
 
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
