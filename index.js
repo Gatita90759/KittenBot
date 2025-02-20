@@ -1,4 +1,3 @@
-
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 require('dotenv').config();
@@ -41,9 +40,12 @@ client.once('ready', () => {
 client.on('messageCreate', async (message) => {
   // Ignorar mensajes de bots y mensajes que no empiecen con el prefijo
   if (message.author.bot || !message.content.startsWith('!')) return;
-  
+
   // Ignorar interacciones de comandos slash
-  if (message.interaction) return;
+  if (message.interaction) {
+    console.log('Ignorando interacción de comando slash en un mensaje.');
+    return;
+  }
 
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
@@ -52,21 +54,29 @@ client.on('messageCreate', async (message) => {
   if (!command) return;
 
   try {
-    command.execute(message, args, client.commands);
+    console.log(`Ejecutando comando normal: ${commandName}`);
+    await command.execute(message, args, client.commands);
   } catch (error) {
     console.error(error);
-    message.reply('Hubo un error al ejecutar el comando.');
+    await message.reply('Hubo un error al intentar ejecutar ese comando.');
   }
 });
 
 // Manejar comandos slash
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand()) {
+    console.log('Interacción ignorada: no es un comando de entrada de chat.');
+    return;
+  }
 
   const command = client.slashCommands.get(interaction.commandName);
-  if (!command) return;
+  if (!command) {
+    console.log(`Comando slash desconocido: ${interaction.commandName}`);
+    return;
+  }
 
   try {
+    console.log(`Ejecutando comando slash: ${interaction.commandName}`);
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
