@@ -7,7 +7,7 @@ module.exports = {
   execute: async (message, args) => {
     // Verificar si hay una sugerencia
     if (!args.length) {
-      return message.reply('¡Debes escribir una sugerencia para que funcione!');
+      return message.reply({ content: '¡Debes escribir una sugerencia para que funcione!', allowedMentions: { repliedUser: false } });
     }
 
     const sugerencia = args.join(' ');
