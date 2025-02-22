@@ -30,26 +30,16 @@ client.on('ready', () => {
 });
 
 client.on('messageCreate', async message => {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(config.prefix)) return;
+  if (message.author.bot || !message.content.startsWith(config.prefix)) return;
 
   const args = message.content.slice(config.prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
-
   const command = client.commands.get(commandName);
-  
+
   if (!command) return;
 
-  // Evitar duplicación de comandos
-  const key = `${message.author.id}-${message.content}-${Date.now()}`;
-  if (client.recentCommands && client.recentCommands.has(key)) return;
-  
-  if (!client.recentCommands) client.recentCommands = new Set();
-  client.recentCommands.add(key);
-  setTimeout(() => client.recentCommands.delete(key), 2000);
-
   try {
-    await command.execute(message, args);
+    command.execute(message, args);
   } catch (error) {
     console.error(error);
     message.reply('Hubo un error al ejecutar el comando.');
