@@ -22,10 +22,10 @@ module.exports = {
       .setTimestamp()
       .setFooter({ text: '💡 Reacciona para votar' });
 
-    const mensajeEnviado = await message.channel.send({ embeds: [mensaje] });
+    await message.channel.send({ embeds: [mensaje] });
 
     // Agregar reacciones para votar
-    await mensajeEnviado.react('👍');
-    await mensajeEnviado.react('👎');
+    await mensaje.react('👍');
+    await mensaje.react('👎');
   },
 };
