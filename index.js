@@ -1,88 +1,51 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, IntentsBitField, Collection } = require('discord.js');
+const config = require('./config.js');
 const fs = require('fs');
-require('dotenv').config();
 
-// Crear el cliente con los intents necesarios
-const client = new Client({ 
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ] 
-});
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
 
-// Inicializar colecciones
-client.commands = new Collection(); // Comandos normales
-client.slashCommands = new Collection(); // Comandos slash
+// Inicializa la colección de client.commands
+client.commands = new Collection();
 
-// Cargar comandos normales
-const normalCommandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-for (const file of normalCommandFiles) {
+// Cargar comandos de la carpeta '/commands'
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
 
-// Cargar comandos slash
-const slashCommandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
-for (const file of slashCommandFiles) {
-  const command = require(`./slashCommands/${file}`);
-  if (command.data) {
+client.on('ready', () => {
+  console.log(`¡El bot está listo!`);
+
+  // Inicializar la colección de slashCommands aquí
+  client.slashCommands = new Collection();
+
+  // Cargar comandos slash desde la carpeta '/slashCommands'
+  const slashCommandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
+  for (const file of slashCommandFiles) {
+    const command = require(`./slashCommands/${file}`);
     client.slashCommands.set(command.data.name, command);
   }
-}
-
-// Evento cuando el bot está listo
-client.once('ready', () => {
-  console.log('¡El bot está listo!');
 });
 
-// Manejar comandos normales
-client.on('messageCreate', async (message) => {
-  // Ignorar mensajes de bots y mensajes que no empiecen con el prefijo
-  if (message.author.bot || !message.content.startsWith('!')) return;
+client.on('messageCreate', async message => {
+  if (message.author.bot) return;
+  if (!message.content.startsWith(config.prefix)) return;
 
-  // Ignorar interacciones de comandos slash
-  if (message.interaction) {
-    console.log('Ignorando interacción de comando slash en un mensaje.');
-    return;
-  }
-
-  const args = message.content.slice(1).trim().split(/ +/);
+  const args = message.content.slice(config.prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
 
-  const command = client.commands.get(commandName);
+  const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
   if (!command) return;
 
   try {
-    console.log(`Ejecutando comando normal: ${commandName}`);
-    await command.execute(message, args, client.commands);
+    await command.execute(message, args);
   } catch (error) {
     console.error(error);
-    await message.reply('Hubo un error al intentar ejecutar ese comando.');
+    message.reply('Hubo un error al ejecutar el comando.');
   }
 });
 
-// Manejar comandos slash
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) {
-    console.log('Interacción ignorada: no es un comando de entrada de chat.');
-    return;
-  }
-
-  const command = client.slashCommands.get(interaction.commandName);
-  if (!command) {
-    console.log(`Comando slash desconocido: ${interaction.commandName}`);
-    return;
-  }
-
-  try {
-    console.log(`Ejecutando comando slash: ${interaction.commandName}`);
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({ content: 'Hubo un error al ejecutar este comando.', ephemeral: true });
-  }
-});
-
-// Iniciar sesión
-client.login(process.env.TOKEN);
+client.login(config.TOKEN);

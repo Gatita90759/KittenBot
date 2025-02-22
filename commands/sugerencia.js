@@ -11,7 +11,7 @@ module.exports = {
     }
 
     const sugerencia = args.join(' ');
-    const mensaje = new EmbedBuilder() // Declare the variable here
+    const mensaje = new EmbedBuilder()
       .setTitle('📝 Nueva Sugerencia')
       .setDescription(sugerencia)
       .setColor(0x3498DB)
@@ -22,10 +22,10 @@ module.exports = {
       .setTimestamp()
       .setFooter({ text: '💡 Reacciona para votar' });
 
-    const sentMessage = await message.channel.send({ embeds: [mensaje] }); // Store the sent message
+    await message.channel.send({ embeds: [mensaje] });
 
     // Agregar reacciones para votar
-    await sentMessage.react('👍');
-    await sentMessage.react('👎');
+    await mensaje.react('👍');
+    await mensaje.react('👎');
   },
 };
