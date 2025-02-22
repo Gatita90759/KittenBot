@@ -5,9 +5,13 @@ module.exports = {
   name: 'sugerencia',
   description: 'Envía una sugerencia para el servidor',
   execute: async (message, args) => {
+    // Verificar que no sea un comando slash
+    if (message.interaction) return;
+    
     // Verificar si hay una sugerencia
     if (!args.length) {
-      return message.reply({ content: '¡Debes escribir una sugerencia para que funcione!', allowedMentions: { repliedUser: false } });
+      const reply = await message.reply('¡Debes escribir una sugerencia para que funcione!');
+      return;
     }
 
     const sugerencia = args.join(' ');
