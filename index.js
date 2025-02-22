@@ -36,9 +36,17 @@ client.on('messageCreate', async message => {
   const args = message.content.slice(config.prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
 
-  const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-
+  const command = client.commands.get(commandName);
+  
   if (!command) return;
+
+  // Evitar duplicación de comandos
+  const key = `${message.author.id}-${message.content}-${Date.now()}`;
+  if (client.recentCommands && client.recentCommands.has(key)) return;
+  
+  if (!client.recentCommands) client.recentCommands = new Set();
+  client.recentCommands.add(key);
+  setTimeout(() => client.recentCommands.delete(key), 2000);
 
   try {
     await command.execute(message, args);
