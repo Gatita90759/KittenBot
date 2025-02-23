@@ -29,6 +29,24 @@ client.on('ready', () => {
   }
 });
 
+// Manejar interacciones de comandos slash
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return;
+
+  const command = client.slashCommands.get(interaction.commandName);
+  if (!command) return;
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({ 
+      content: 'Hubo un error al ejecutar este comando.',
+      ephemeral: true 
+    });
+  }
+});
+
 client.on('messageCreate', async message => {
   if (message.author.bot || !message.content.startsWith(config.prefix)) return;
 
