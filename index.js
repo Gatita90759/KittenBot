@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
 
-// Inicializa la colección de client.commands
+// Inicializa la colección de comandos
 client.commands = new Collection();
 
 // Cargar comandos de la carpeta '/commands'
@@ -18,7 +18,7 @@ for (const file of commandFiles) {
 client.on('ready', () => {
   console.log(`¡El bot está listo!`);
 
-  // Inicializar la colección de slashCommands aquí
+  // Inicializar la colección de slashCommands
   client.slashCommands = new Collection();
 
   // Cargar comandos slash desde la carpeta '/slashCommands'
@@ -39,7 +39,8 @@ client.on('messageCreate', async message => {
   if (!command) return;
 
   try {
-    command.execute(message, args);
+    // Ahora pasamos client.commands como tercer argumento para evitar el error
+    command.execute(message, args, client.commands);
   } catch (error) {
     console.error(error);
     message.reply('Hubo un error al ejecutar el comando.');
