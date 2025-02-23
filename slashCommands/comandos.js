@@ -18,7 +18,7 @@ module.exports = {
       .setDescription('Aquí están los comandos que puedes usar:')
       .setColor(0x00FF00)
     .setTimestamp() // Fecha y hora
-    .setFooter({ text: 'holi' }); // Footer personalizado
+    .setFooter({ text: '(solo muestra los comandos slash o "/" , para ver los comandos normales pon kb!comandos)' }); // Footer personalizado
 
 
 

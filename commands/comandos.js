@@ -17,7 +17,7 @@ module.exports = {
       .setDescription('Aquí están los comandos que puedes usar:') // Descripción principal
       .setColor(0x00FF00) // Color del embed
     .setTimestamp() // Fecha y hora
-    .setFooter({ text: 'holi' }); // Footer personalizado
+    .setFooter({ text: '(solo muestra los comandos normales, para ver los comandos slash o "/" pon /comandos)' }); // Footer personalizado
 
 
     // Agregar los comandos al embed
