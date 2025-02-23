@@ -17,7 +17,10 @@ module.exports = {
       .setTitle('Comandos Disponibles')
       .setDescription('Aquí están los comandos que puedes usar:')
       .setColor(0x00FF00)
-      .setFooter({ text: '(solo salen los comandos slash o "/")' });
+    .setTimestamp() // Fecha y hora
+    .setFooter({ text: 'holi' }); // Footer personalizado
+
+
 
     clientCommands.forEach((cmd) => {
       embed.addFields({ name: `\`/${cmd.data.name}\``, value: cmd.data.description, inline: false });
