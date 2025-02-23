@@ -16,7 +16,8 @@ module.exports = {
       .setTitle('Comandos Disponibles') // Título del embed
       .setDescription('Aquí están los comandos que puedes usar:') // Descripción principal
       .setColor(0x00FF00) // Color del embed
-      .setTimestamp(); // Fecha y hora
+      .setTimestamp() // Fecha y hora
+      .setFooter({ text: 'holi' }); // Footer personalizado
 
     // Agregar los comandos al embed
     clientCommands.forEach((cmd) => {
