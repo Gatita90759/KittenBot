@@ -43,5 +43,4 @@ module.exports = async (message) => {
   
   // Guardar datos actualizados
   await db.set(key, userData);
-}a);
 };
