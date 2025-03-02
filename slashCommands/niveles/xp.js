@@ -1,7 +1,5 @@
 const QuickDB = require("quick.db");
 const db = new QuickDB();
-const config = require("../../config.json");
-
 const cooldowns = new Map(); // Para evitar spam de XP
 
 module.exports = async (message) => {
@@ -32,18 +30,8 @@ module.exports = async (message) => {
         userData.xp = 0; // Reinicia XP al subir de nivel
 
         message.channel.send(`🎉 ¡${message.author.username} ha subido al nivel ${userData.level}!`);
-
-        // Otorgar rol si hay recompensa definida en config.json
-        const rewardRoleId = config.rewards[userData.level];
-        if (rewardRoleId) {
-            const role = message.guild.roles.cache.get(rewardRoleId);
-            const member = message.guild.members.cache.get(userId);
-            if (role && member) {
-                await member.roles.add(role);
-                message.channel.send(`🎖️ ¡${message.author.username} ha recibido el rol **${role.name}** por llegar a nivel ${userData.level}!`);
-            }
-        }
     }
 
+    // Guardar datos actualizados
     await db.set(key, userData);
 };
