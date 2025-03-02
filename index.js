@@ -1,7 +1,7 @@
 const { Client, IntentsBitField, Collection } = require('discord.js');
 const config = require('./config.js');
 const fs = require('fs');
-const xpSystem = require('./slashCommands/xp.js'); // Importamos el sistema de XP
+const xpSystem = require('./slashCommands/xp.js'); // Importamos el sistema de XP desde la nueva ubicación
 
 const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
 
