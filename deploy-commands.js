@@ -1,3 +1,4 @@
+
 const { REST, Routes } = require('discord.js');
 const fs = require('fs');
 require('dotenv').config();
@@ -8,7 +9,9 @@ const commands = [];
 const slashCommandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
 for (const file of slashCommandFiles) {
   const command = require(`./slashCommands/${file}`);
-  commands.push(command.data.toJSON());
+  if (command.data) {
+    commands.push(command.data.toJSON());
+  }
 }
 
 // Registrar comandos
