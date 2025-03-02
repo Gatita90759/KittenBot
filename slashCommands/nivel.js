@@ -27,7 +27,7 @@ module.exports = {
     
     // Crear embed
     const embed = new EmbedBuilder()
-      .setTitle(`🏆 Nivel de ${targetUser.username}`)
+      .setTitle(`\<:xi:1332882536648540221> Nivel de ${targetUser.username}`)
       .setDescription(`Información de nivel y experiencia`)
       .setColor(0x3498DB)
       .setThumbnail(targetUser.displayAvatarURL({ dynamic: true }))

@@ -1,3 +1,4 @@
+
 const { Client, IntentsBitField, Collection } = require('discord.js');
 const config = require('./config.js');
 const fs = require('fs');
@@ -26,7 +27,9 @@ client.on('ready', () => {
   const slashCommandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
   for (const file of slashCommandFiles) {
     const command = require(`./slashCommands/${file}`);
-    client.slashCommands.set(command.data.name, command);
+    if (command.data) { // Verificar que tenga la propiedad data
+      client.slashCommands.set(command.data.name, command);
+    }
   }
 });
 
@@ -41,7 +44,8 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    await interaction.reply({ 
+    const replyMethod = interaction.replied || interaction.deferred ? 'followUp' : 'reply';
+    await interaction[replyMethod]({ 
       content: 'Hubo un error al ejecutar este comando.',
       ephemeral: true 
     });
@@ -50,24 +54,25 @@ client.on('interactionCreate', async interaction => {
 
 // Manejar mensajes para el sistema de XP
 client.on('messageCreate', async (message) => {
+  // Procesar XP para mensajes
+  await xpSystem(message);
+  
   if (message.content.startsWith(config.prefix)) {
     // Ejecutar comandos con prefijo
     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
     const command = client.commands.get(commandName);
 
-    if (command) {
-      try {
-        await command.execute(message, args, client.commands);
-      } catch (error) {
-        console.error(error);
-        message.reply('Hubo un error al ejecutar el comando.');
-      }
+    if (!command) return;
+
+    try {
+      command.execute(message, args, Array.from(client.commands.values()));
+    } catch (error) {
+      console.error(error);
+      message.reply('Hubo un error al ejecutar ese comando.');
     }
   }
-
-  // Llamamos al sistema de XP
-  await xpSystem(message);
 });
 
+// Iniciar sesión con el token
 client.login(config.TOKEN);
