@@ -1,5 +1,5 @@
 
-const QuickDB = require("quick.db");
+const { QuickDB } = require("quick.db");
 const db = new QuickDB();
 const cooldowns = new Map(); // Para evitar spam de XP
 
