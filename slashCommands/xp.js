@@ -1,5 +1,5 @@
 
-const QuickDB = require("quick.db");
+const { QuickDB } = require("quick.db");
 const db = new QuickDB();
 const config = require("../../config.json");
 
