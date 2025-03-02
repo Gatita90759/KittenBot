@@ -1,33 +1,65 @@
-const { SlashCommandBuilder } = require("discord.js");
-const QuickDB = require("quick.db");
+
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { QuickDB } = require("quick.db");
 const db = new QuickDB();
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("clasificacion")
-        .setDescription("Muestra la clasificación de los usuarios con más nivel"),
+        .setDescription("Muestra la clasificación de niveles del servidor"),
     async execute(interaction) {
+        await interaction.deferReply(); // Usamos defer porque puede tardar
+
         const guildId = interaction.guild.id;
-        const allUsers = await db.all();
-
-        const leaderboard = allUsers
-            .filter(entry => entry.id.startsWith(`level_${guildId}_`))
-            .map(entry => ({
-                id: entry.id.split("_")[2],
-                level: entry.value.level || 1,
-                xp: entry.value.xp || 0
-            }))
-            .sort((a, b) => b.level - a.level || b.xp - a.xp)
-            .slice(0, 10); // Los primeros 10 usuarios
-
-        if (leaderboard.length === 0) {
-            return interaction.reply("No hay datos en la clasificación aún.");
+        const keys = await db.all();
+        
+        // Filtrar solo claves relacionadas con niveles de este servidor
+        const levelKeys = keys.filter(item => item.id.startsWith(`level_${guildId}_`));
+        
+        if (levelKeys.length === 0) {
+            return interaction.editReply("Aún no hay usuarios con niveles en este servidor.");
         }
 
-        let ranking = leaderboard
-            .map((user, index) => `**${index + 1}.** <@${user.id}> - Nivel **${user.level}** (${user.xp} XP)`)
-            .join("\n");
+        // Ordenar por nivel y XP
+        const sortedUsers = levelKeys.sort((a, b) => {
+            if (a.value.level !== b.value.level) {
+                return b.value.level - a.value.level;
+            }
+            return b.value.xp - a.value.xp;
+        });
 
-        await interaction.reply(`🏆 **Clasificación del servidor:**\n\n${ranking}`);
+        // Limitar a los 10 primeros
+        const top10 = sortedUsers.slice(0, 10);
+
+        // Crear el embed
+        const embed = new EmbedBuilder()
+            .setTitle("🏆 Clasificación de Niveles")
+            .setDescription("Los miembros con mayor nivel en el servidor")
+            .setColor(0xFFD700)
+            .setTimestamp();
+
+        // Agregar cada usuario al embed
+        for (let i = 0; i < top10.length; i++) {
+            const userId = top10[i].id.split('_')[2];
+            const userData = top10[i].value;
+            
+            try {
+                const user = await interaction.client.users.fetch(userId);
+                embed.addFields({
+                    name: `${i + 1}. ${user.username}`,
+                    value: `Nivel: ${userData.level} | XP: ${userData.xp}/${userData.level * 100}`,
+                    inline: false
+                });
+            } catch (error) {
+                console.error(`No se pudo obtener el usuario ${userId}:`, error);
+                embed.addFields({
+                    name: `${i + 1}. Usuario Desconocido`,
+                    value: `Nivel: ${userData.level} | XP: ${userData.xp}/${userData.level * 100}`,
+                    inline: false
+                });
+            }
+        }
+
+        await interaction.editReply({ embeds: [embed] });
     }
 };
