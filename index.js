@@ -1,6 +1,7 @@
 const { Client, IntentsBitField, Collection } = require('discord.js');
 const config = require('./config.js');
 const fs = require('fs');
+const xpSystem = require('./commands/niveles/xp.js'); // Importamos el sistema de XP
 
 const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
 
@@ -47,22 +48,26 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-client.on('messageCreate', async message => {
-  if (message.author.bot || !message.content.startsWith(config.prefix)) return;
+// Manejar mensajes para el sistema de XP
+client.on('messageCreate', async (message) => {
+  if (message.content.startsWith(config.prefix)) {
+    // Ejecutar comandos con prefijo
+    const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    const command = client.commands.get(commandName);
 
-  const args = message.content.slice(config.prefix.length).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-  const command = client.commands.get(commandName);
-
-  if (!command) return;
-
-  try {
-    // Ahora pasamos client.commands como tercer argumento para evitar el error
-    command.execute(message, args, client.commands);
-  } catch (error) {
-    console.error(error);
-    message.reply('Hubo un error al ejecutar el comando.');
+    if (command) {
+      try {
+        await command.execute(message, args, client.commands);
+      } catch (error) {
+        console.error(error);
+        message.reply('Hubo un error al ejecutar el comando.');
+      }
+    }
   }
+
+  // Llamamos al sistema de XP
+  await xpSystem(message);
 });
 
 client.login(config.TOKEN);
