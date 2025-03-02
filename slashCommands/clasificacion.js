@@ -4,62 +4,59 @@ const { QuickDB } = require("quick.db");
 const db = new QuickDB();
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("clasificacion")
-        .setDescription("Muestra la clasificación de niveles del servidor"),
-    async execute(interaction) {
-        await interaction.deferReply(); // Usamos defer porque puede tardar
+  data: new SlashCommandBuilder()
+    .setName("clasificacion")
+    .setDescription("Muestra los usuarios con más nivel en el servidor"),
+    
+  async execute(interaction) {
+    const guildId = interaction.guild.id;
+    const allKeys = await db.all();
+    
+    // Filtrar solo las entradas de nivel para este servidor
+    const levelData = allKeys
+      .filter(entry => entry.id.startsWith(`level_${guildId}_`))
+      .map(entry => {
+        const userId = entry.id.split('_')[2];
+        return {
+          userId,
+          level: entry.value.level,
+          xp: entry.value.xp
+        };
+      })
+      // Ordenar por nivel (descendente) y luego por XP (descendente)
+      .sort((a, b) => {
+        if (b.level !== a.level) return b.level - a.level;
+        return b.xp - a.xp;
+      })
+      // Tomar los 10 primeros
+      .slice(0, 10);
 
-        const guildId = interaction.guild.id;
-        const keys = await db.all();
+    // Crear un embed para la clasificación
+    const embed = new EmbedBuilder()
+      .setTitle("🏆 Clasificación de Niveles")
+      .setDescription("Los usuarios con más nivel en el servidor")
+      .setColor(0xFFD700) // Color dorado
+      .setTimestamp();
+    
+    if (levelData.length === 0) {
+      embed.setDescription("Aún no hay datos de nivel en este servidor.");
+    } else {
+      // Construir la lista de usuarios
+      let description = "";
+      
+      for (let i = 0; i < levelData.length; i++) {
+        const data = levelData[i];
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}.`;
+        const user = await interaction.client.users.fetch(data.userId).catch(() => null);
         
-        // Filtrar solo claves relacionadas con niveles de este servidor
-        const levelKeys = keys.filter(item => item.id.startsWith(`level_${guildId}_`));
-        
-        if (levelKeys.length === 0) {
-            return interaction.editReply("Aún no hay usuarios con niveles en este servidor.");
+        if (user) {
+          description += `${medal} **${user.username}** - Nivel ${data.level} (${data.xp} XP)\n`;
         }
-
-        // Ordenar por nivel y XP
-        const sortedUsers = levelKeys.sort((a, b) => {
-            if (a.value.level !== b.value.level) {
-                return b.value.level - a.value.level;
-            }
-            return b.value.xp - a.value.xp;
-        });
-
-        // Limitar a los 10 primeros
-        const top10 = sortedUsers.slice(0, 10);
-
-        // Crear el embed
-        const embed = new EmbedBuilder()
-            .setTitle("🏆 Clasificación de Niveles")
-            .setDescription("Los miembros con mayor nivel en el servidor")
-            .setColor(0xFFD700)
-            .setTimestamp();
-
-        // Agregar cada usuario al embed
-        for (let i = 0; i < top10.length; i++) {
-            const userId = top10[i].id.split('_')[2];
-            const userData = top10[i].value;
-            
-            try {
-                const user = await interaction.client.users.fetch(userId);
-                embed.addFields({
-                    name: `${i + 1}. ${user.username}`,
-                    value: `Nivel: ${userData.level} | XP: ${userData.xp}/${userData.level * 100}`,
-                    inline: false
-                });
-            } catch (error) {
-                console.error(`No se pudo obtener el usuario ${userId}:`, error);
-                embed.addFields({
-                    name: `${i + 1}. Usuario Desconocido`,
-                    value: `Nivel: ${userData.level} | XP: ${userData.xp}/${userData.level * 100}`,
-                    inline: false
-                });
-            }
-        }
-
-        await interaction.editReply({ embeds: [embed] });
+      }
+      
+      embed.setDescription(description);
     }
+    
+    await interaction.reply({ embeds: [embed] });
+  }
 };
