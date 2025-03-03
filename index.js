@@ -74,5 +74,22 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+// Importar sistema de respaldo
+const { createBackup } = require('./backupSystem.js');
+
+// Crear respaldo automático cada 24 horas
+setInterval(() => {
+  createBackup();
+  console.log('Respaldo automático de niveles creado');
+}, 86400000); // 24 horas en milisegundos
+
+// Crear respaldo al iniciar el bot
+client.once('ready', () => {
+  setTimeout(() => {
+    createBackup();
+    console.log('Respaldo inicial de niveles creado');
+  }, 10000); // Esperar 10 segundos después de iniciar
+});
+
 // Iniciar sesión con el token
 client.login(config.TOKEN);
