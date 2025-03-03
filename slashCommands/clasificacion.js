@@ -29,15 +29,15 @@ module.exports = {
         if (b.level !== a.level) return b.level - a.level;
         return b.xp - a.xp;
       })
-      .slice(0, 10);
+      .slice(0, 5);
 
     const embed = new EmbedBuilder()
-      .setTitle("🏆 Clasificación de Niveles")
+      .setTitle("\<:xi:1332882536648540221>Clasificación\<:xi:1332882536648540221>")
       .setColor(0xFFD700)
       .setTimestamp();
     
     if (levelData.length === 0) {
-      embed.setDescription("Aún no hay datos de nivel en este servidor.");
+      embed.setDescription("Aún no hay datos de nivel en este servidor\<:reimusad:1332149409487781888>");
     } else {
       let description = "";
       
