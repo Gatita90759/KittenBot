@@ -15,7 +15,7 @@ module.exports = async (message) => {
     // Cooldown de 1 minuto para cada usuario
     if (cooldowns.has(userId)) {
         const lastXP = cooldowns.get(userId);
-        if (Date.now() - lastXP < 60000) return;
+        if (Date.now() - lastXP < 10) return;
     }
     cooldowns.set(userId, Date.now());
 
@@ -34,7 +34,7 @@ module.exports = async (message) => {
         userData.level++;
         userData.xp = 0; // Reinicia XP al subir de nivel
 
-        message.channel.send(`🎉 ¡${message.author.username} ha subido al nivel ${userData.level}!`);
+        message.channel.send(`¡${message.author.username} ha subido al nivel ${userData.level} \<a:monitograciosobailandocumbia:1337809456465182790> !`);
 
         // Otorgar rol si hay recompensa definida en config.json
         const rewardRoleId = config.rewards[userData.level];
@@ -43,7 +43,7 @@ module.exports = async (message) => {
             const member = message.guild.members.cache.get(userId);
             if (role && member) {
                 await member.roles.add(role);
-                message.channel.send(`🎖️ ¡${message.author.username} ha recibido el rol **${role.name}** por llegar a nivel ${userData.level}!`);
+                message.channel.send(`¡${message.author.username} ha recibido el rol **${role.name}** por llegar a nivel ${userData.level} \<:waos:1332156890930479144> !`);
             }
         }
     }
