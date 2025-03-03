@@ -80,7 +80,12 @@ client.on('messageCreate', async message => {
   if (!command) return;
 
   try {
-    command.execute(message, args, client.commands);
+    // Si es el comando 'comandos', pasa toda la colección de comandos
+    if (command.name === 'comandos') {
+      command.execute(message, args, Array.from(client.commands.values()));
+    } else {
+      command.execute(message, args);
+    }
   } catch (error) {
     console.error(error);
     message.reply('Hubo un error al ejecutar el comando.');
@@ -88,7 +93,7 @@ client.on('messageCreate', async message => {
 
   // Procesar XP
   const xpSystem = require('./slashCommands/xp.js');
-  xpSystem.processXP(message);
+  xpSystem(message);
 });
 
 client.login(config.TOKEN);
