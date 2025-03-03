@@ -15,7 +15,7 @@ module.exports = async (message) => {
     // Cooldown de 1 minuto para cada usuario
     if (cooldowns.has(userId)) {
         const lastXP = cooldowns.get(userId);
-        if (Date.now() - lastXP < 10) return;
+        if (Date.now() - lastXP < 60000) return;
     }
     cooldowns.set(userId, Date.now());
 
