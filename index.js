@@ -29,10 +29,21 @@ client.commands = new Collection();
 client.slashCommands = new Collection();
 
 // Cargar comandos de la carpeta '/commands' y subcarpetas
-const commandFiles = getFilesRecursively('./commands');
-for (const file of commandFiles) {
-  const command = require(file);
-  client.commands.set(command.name, command);
+try {
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+    const filePath = `./commands/${file}`;
+    console.log(`Cargando comando: ${filePath}`);
+    const command = require(filePath);
+    if ('name' in command && 'execute' in command) {
+      client.commands.set(command.name, command);
+      console.log(`✅ Comando ${command.name} cargado correctamente`);
+    } else {
+      console.log(`❌ El comando en ${filePath} no tiene una propiedad name o execute requerida`);
+    }
+  }
+} catch (error) {
+  console.error('Error al cargar comandos:', error);
 }
 
 // Cargar comandos slash de la carpeta '/slashCommands' y subcarpetas
