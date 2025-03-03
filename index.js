@@ -2,35 +2,54 @@
 const { Client, IntentsBitField, Collection } = require('discord.js');
 const config = require('./config.js');
 const fs = require('fs');
-const xpSystem = require('./slashCommands/xp.js'); // Importamos el sistema de XP desde la nueva ubicación
+const path = require('path');
+const createBackup = require('./backupSystem.js').createBackup;
 
 const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
 
+// Función para obtener archivos de manera recursiva en subcarpetas
+function getFilesRecursively(directory, extension = '.js') {
+  let files = [];
+  const items = fs.readdirSync(directory, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(directory, item.name);
+    if (item.isDirectory()) {
+      files = files.concat(getFilesRecursively(fullPath, extension));
+    } else if (item.isFile() && item.name.endsWith(extension)) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
 // Inicializa la colección de comandos
 client.commands = new Collection();
+client.slashCommands = new Collection();
 
-// Cargar comandos de la carpeta '/commands'
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
+// Cargar comandos de la carpeta '/commands' y subcarpetas
+const commandFiles = getFilesRecursively('./commands');
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
+  const command = require(file);
   client.commands.set(command.name, command);
+}
+
+// Cargar comandos slash de la carpeta '/slashCommands' y subcarpetas
+const slashCommandFiles = getFilesRecursively('./slashCommands');
+for (const file of slashCommandFiles) {
+  const command = require(file);
+  if (command.data) {
+    client.slashCommands.set(command.data.name, command);
+  }
 }
 
 client.on('ready', () => {
   console.log(`¡El bot está listo!`);
 
-  // Inicializar la colección de slashCommands
-  client.slashCommands = new Collection();
-
-  // Cargar comandos slash desde la carpeta '/slashCommands'
-  const slashCommandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
-  for (const file of slashCommandFiles) {
-    const command = require(`./slashCommands/${file}`);
-    if (command.data) { // Verificar que tenga la propiedad data
-      client.slashCommands.set(command.data.name, command);
-    }
-  }
+  // Iniciar sistema de respaldo
+  setTimeout(() => createBackup(), 10000);
+  setInterval(() => createBackup(), 86400000);
 });
 
 // Manejar interacciones de comandos slash
@@ -44,52 +63,32 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    const replyMethod = interaction.replied || interaction.deferred ? 'followUp' : 'reply';
-    await interaction[replyMethod]({ 
+    await interaction.reply({ 
       content: 'Hubo un error al ejecutar este comando.',
       ephemeral: true 
     });
   }
 });
 
-// Manejar mensajes para el sistema de XP
-client.on('messageCreate', async (message) => {
-  // Procesar XP para mensajes
-  await xpSystem(message);
-  
-  if (message.content.startsWith(config.prefix)) {
-    // Ejecutar comandos con prefijo
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    const command = client.commands.get(commandName);
+client.on('messageCreate', async message => {
+  if (message.author.bot || !message.content.startsWith(config.prefix)) return;
 
-    if (!command) return;
+  const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+  const commandName = args.shift().toLowerCase();
+  const command = client.commands.get(commandName);
 
-    try {
-      command.execute(message, args, Array.from(client.commands.values()));
-    } catch (error) {
-      console.error(error);
-      message.reply('Hubo un error al ejecutar ese comando.');
-    }
+  if (!command) return;
+
+  try {
+    command.execute(message, args, client.commands);
+  } catch (error) {
+    console.error(error);
+    message.reply('Hubo un error al ejecutar el comando.');
   }
+
+  // Procesar XP
+  const xpSystem = require('./slashCommands/xp.js');
+  xpSystem.processXP(message);
 });
 
-// Importar sistema de respaldo
-const { createBackup } = require('./backupSystem.js');
-
-// Crear respaldo automático cada 24 horas
-setInterval(() => {
-  createBackup();
-  console.log('Respaldo automático de niveles creado');
-}, 86400000); // 24 horas en milisegundos
-
-// Crear respaldo al iniciar el bot
-client.once('ready', () => {
-  setTimeout(() => {
-    createBackup();
-    console.log('Respaldo inicial de niveles creado');
-  }, 10000); // Esperar 10 segundos después de iniciar
-});
-
-// Iniciar sesión con el token
 client.login(config.TOKEN);
