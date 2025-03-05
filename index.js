@@ -1,7 +1,7 @@
-
 const fs = require('fs');
 const path = require('path');
 const { Collection, Client, GatewayIntentBits } = require('discord.js');
+const config = require('./config.js'); // Import the config file
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
@@ -47,7 +47,9 @@ try {
 client.on('messageCreate', (message) => {
   if (message.author.bot) return;
 
-  const args = message.content.split(/\s+/);
+  if (!message.content.startsWith(config.prefix)) return; // Check if message starts with the prefix
+
+  const args = message.content.slice(config.prefix.length).trim().split(/\s+/); // Remove prefix and split into arguments
   const commandName = args.shift().toLowerCase();
   const command = client.commands.get(commandName);
 
