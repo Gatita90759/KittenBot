@@ -1,4 +1,3 @@
-
 const { restoreFromBackup } = require('../backupSystem.js');
 const fs = require('fs');
 
@@ -14,11 +13,11 @@ module.exports = {
     try {
       // Listar archivos de respaldo disponibles
       const backupDir = './backups';
-      
+
       if (!fs.existsSync(backupDir)) {
         return message.reply('❌ No hay respaldos disponibles.');
       }
-      
+
       const backups = fs.readdirSync(backupDir)
         .filter(file => file.startsWith('levels_backup_'))
         .sort((a, b) => {
@@ -27,19 +26,19 @@ module.exports = {
           const timeB = parseInt(b.split('_').pop().replace('.json', ''));
           return timeB - timeA;
         });
-      
+
       if (backups.length === 0) {
         return message.reply('❌ No hay respaldos disponibles.');
       }
-      
+
       // Si no se especifica un archivo, usar el más reciente
       const backupFile = args[0] ? args[0] : backups[0];
       const backupPath = `${backupDir}/${backupFile}`;
-      
+
       message.reply(`⏳ Restaurando desde respaldo: ${backupFile}...`);
-      
+
       const success = await restoreFromBackup(backupPath);
-      
+
       if (success) {
         message.reply('✅ Respaldo restaurado correctamente.');
       } else {

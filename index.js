@@ -1,11 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { Collection, Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, IntentsBitField, SlashCommandBuilder } = require('discord.js');
 const config = require('./config.js'); // Import the config file
+const { Collection } = require('discord.js');
 
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
-});
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
 
 client.commands = new Collection();
 client.slashCommands = new Collection();
@@ -32,40 +31,49 @@ try {
     const filePath = `./commands/${file}`;
     console.log(`Cargando comando: ${filePath}`);
     const command = require(filePath);
-    if ('name' in command && 'execute' in command) {
-      client.commands.set(command.name, command);
-      console.log(`✅ Comando ${command.name} cargado correctamente`);
+    if ('data' in command && 'execute' in command) {
+      client.commands.set(command.data.name, command);
+      console.log(`✅ Comando ${command.data.name} cargado correctamente`);
     } else {
-      console.log(`❌ El comando en ${filePath} no tiene una propiedad name o execute requerida`);
+      console.log(`❌ El comando en ${filePath} no tiene una propiedad data o execute requerida`);
     }
   }
 } catch (error) {
   console.error('Error al cargar comandos:', error);
 }
 
-// Procesar mensajes
-client.on('messageCreate', (message) => {
-  if (message.author.bot) return;
+// Registrar comandos Slash
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
 
-  if (!message.content.startsWith(config.prefix)) return; // Check if message starts with the prefix
+  const guild = client.guilds.cache.get(config.GUILD_ID);
+  if (!guild) {
+    console.error("No se encontró el servidor especificado en config.js");
+    return;
+  }
 
-  const args = message.content.slice(config.prefix.length).trim().split(/\s+/); // Remove prefix and split into arguments
-  const commandName = args.shift().toLowerCase();
-  const command = client.commands.get(commandName);
+  client.commands.forEach((command) => {
+    guild.commands.create(command.data);
+  });
+});
 
-  console.log('Comando detectado:', commandName); // Registro de depuración
+// Procesar interacciones de comandos Slash
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
 
   if (!command) {
-    console.log(`Comando no encontrado: ${commandName}`);
+    console.log(`Comando no encontrado: ${interaction.commandName}`);
     return;
   }
 
   try {
-    console.log('Ejecutando comando:', commandName);
-    command.execute(message, args, client.commands);
+    console.log('Ejecutando comando:', interaction.commandName);
+    await command.execute(interaction, client.commands);
   } catch (error) {
-    console.error(`Error al ejecutar el comando ${commandName}:`, error);
-    message.reply('Hubo un error al ejecutar el comando.');
+    console.error(`Error al ejecutar el comando ${interaction.commandName}:`, error);
+    await interaction.reply({ content: 'Hubo un error al ejecutar el comando.', ephemeral: true });
   }
 });
 
