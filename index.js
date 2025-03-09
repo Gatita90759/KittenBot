@@ -1,83 +1,128 @@
+
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, IntentsBitField, SlashCommandBuilder } = require('discord.js');
-const config = require('./config.js'); // Import the config file
-const { Collection } = require('discord.js');
+const { Client, GatewayIntentBits, IntentsBitField, Collection } = require('discord.js');
+const config = require('./config.js');
 
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent] });
-
-client.commands = new Collection();
-client.slashCommands = new Collection();
-
-function getFilesRecursively(directory, extension = '.js') {
-  let files = [];
-  const items = fs.readdirSync(directory, { withFileTypes: true });
-
-  for (const item of items) {
-    const fullPath = path.join(directory, item.name);
-    if (item.isDirectory()) {
-      files = files.concat(getFilesRecursively(fullPath, extension));
-    } else if (item.isFile() && item.name.endsWith(extension)) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-}
-
-// Cargar comandos de la carpeta '/commands'
-try {
-  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-  for (const file of commandFiles) {
-    const filePath = `./commands/${file}`;
-    console.log(`Cargando comando: ${filePath}`);
-    const command = require(filePath);
-    if ('data' in command && 'execute' in command) {
-      client.commands.set(command.data.name, command);
-      console.log(`✅ Comando ${command.data.name} cargado correctamente`);
-    } else {
-      console.log(`❌ El comando en ${filePath} no tiene una propiedad data o execute requerida`);
-    }
-  }
-} catch (error) {
-  console.error('Error al cargar comandos:', error);
-}
-
-// Registrar comandos Slash
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-
-  const guild = client.guilds.cache.get(config.GUILD_ID);
-  if (!guild) {
-    console.error("No se encontró el servidor especificado en config.js");
-    return;
-  }
-
-  client.commands.forEach((command) => {
-    guild.commands.create(command.data);
-  });
+const client = new Client({ 
+  intents: [
+    IntentsBitField.Flags.Guilds, 
+    IntentsBitField.Flags.GuildMessages, 
+    IntentsBitField.Flags.MessageContent
+  ] 
 });
 
-// Procesar interacciones de comandos Slash
+// Collections for both types of commands
+client.commands = new Collection(); // Regular commands
+client.slashCommands = new Collection(); // Slash commands
+
+// Load regular commands
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+for (const file of commandFiles) {
+  const filePath = `./commands/${file}`;
+  console.log(`Cargando comando regular: ${filePath}`);
+  const command = require(filePath);
+  
+  // Check if it has name and execute properties
+  if (command.name && command.execute) {
+    client.commands.set(command.name, command);
+    console.log(`✅ Comando regular ${command.name} cargado correctamente`);
+  } else {
+    console.log(`❌ El comando en ${filePath} no tiene las propiedades requeridas`);
+  }
+}
+
+// Load slash commands
+const slashCommandsPath = './slashCommands';
+if (fs.existsSync(slashCommandsPath)) {
+  const slashCommandFiles = fs.readdirSync(slashCommandsPath).filter(file => file.endsWith('.js'));
+  for (const file of slashCommandFiles) {
+    const filePath = `${slashCommandsPath}/${file}`;
+    console.log(`Cargando comando slash: ${filePath}`);
+    const command = require(filePath);
+    
+    if (command.data && command.execute) {
+      client.slashCommands.set(command.data.name, command);
+      console.log(`✅ Comando slash ${command.data.name} cargado correctamente`);
+    } else {
+      console.log(`❌ El comando slash en ${filePath} no tiene las propiedades requeridas`);
+    }
+  }
+}
+
+// Handle messages for regular commands
+client.on('messageCreate', message => {
+  if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+
+  const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+  const commandName = args.shift().toLowerCase();
+
+  const command = client.commands.get(commandName);
+  if (!command) return;
+
+  try {
+    command.execute(message, args, client.commands);
+  } catch (error) {
+    console.error(error);
+    message.reply('Hubo un error al ejecutar el comando.');
+  }
+});
+
+// Register slash commands when ready
+client.on('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+
+  try {
+    // First, check if GUILD_ID is available
+    if (!config.GUILD_ID) {
+      console.warn("⚠️ No GUILD_ID specified in config.js or .env. Using global commands instead.");
+      return;
+    }
+
+    const guild = client.guilds.cache.get(config.GUILD_ID);
+    if (!guild) {
+      console.warn(`⚠️ No se encontró el servidor con ID ${config.GUILD_ID}. Verifique GUILD_ID en su .env`);
+      console.log("Servidores disponibles:");
+      client.guilds.cache.forEach(g => {
+        console.log(`- ${g.name} (ID: ${g.id})`);
+      });
+      return;
+    }
+
+    console.log(`Registrando comandos slash en el servidor: ${guild.name}`);
+    const commands = Array.from(client.slashCommands.values()).map(cmd => cmd.data);
+    await guild.commands.set(commands);
+    console.log('Comandos slash registrados correctamente');
+  } catch (error) {
+    console.error('Error al registrar comandos slash:', error);
+  }
+});
+
+// Handle slash command interactions
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  const command = client.commands.get(interaction.commandName);
-
-  if (!command) {
-    console.log(`Comando no encontrado: ${interaction.commandName}`);
-    return;
-  }
+  const command = client.slashCommands.get(interaction.commandName);
+  if (!command) return;
 
   try {
-    console.log('Ejecutando comando:', interaction.commandName);
-    await command.execute(interaction, client.commands);
+    await command.execute(interaction);
   } catch (error) {
-    console.error(`Error al ejecutar el comando ${interaction.commandName}:`, error);
-    await interaction.reply({ content: 'Hubo un error al ejecutar el comando.', ephemeral: true });
+    console.error(`Error al ejecutar el comando slash ${interaction.commandName}:`, error);
+    const replyContent = {
+      content: 'Hubo un error al ejecutar el comando.',
+      ephemeral: true
+    };
+    
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(replyContent);
+    } else {
+      await interaction.reply(replyContent);
+    }
   }
 });
 
-// Iniciar el cliente
+// Log in
 client.login(process.env.TOKEN)
   .then(() => console.log('Cliente conectado correctamente'))
   .catch((error) => console.error('Error al iniciar el cliente:', error));

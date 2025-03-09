@@ -32,5 +32,5 @@ module.exports = {
     // Agregar reacciones para votar
     await mensaje.react('👍');
     await mensaje.react('👎');
-  },
+  }
 };
