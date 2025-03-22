@@ -4,6 +4,15 @@ const path = require('path');
 const { Client, GatewayIntentBits, IntentsBitField, Collection } = require('discord.js');
 const config = require('./config.js');
 
+const mongoose = require("mongoose");
+
+mongoose.connect("mongodb+srv://usuario:contraseña@cluster0.mongodb.net/nombreDeTuDB", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log("✅ Conectado a la base de datos.");
+}).catch(err => console.error("❌ Error conectando a la base de datos:", err));
+
 const client = new Client({ 
   intents: [
     IntentsBitField.Flags.Guilds, 
