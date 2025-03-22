@@ -6,7 +6,7 @@ const config = require('./config.js');
 
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://Miau:MupfWNCLUYOyAtlz@cluster0.mongodb.net/Project0", {
+mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://<Miau>:MupfWNCLUYOyAtlz>@cluster0.hdgpj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
   retryWrites: true,
   w: "majority"
 }).then(() => {
