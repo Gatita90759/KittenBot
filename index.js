@@ -6,9 +6,9 @@ const config = require('./config.js');
 
 const mongoose = require("mongoose");
 
-mongoose.connect("mongodb+srv://Miau:MupfWNCLUYOyAtlz@cluster0.mongodb.net/Project0", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://Miau:MupfWNCLUYOyAtlz@cluster0.mongodb.net/Project0", {
+  retryWrites: true,
+  w: "majority"
 }).then(() => {
   console.log("✅ Conectado a la base de datos.");
 }).catch(err => console.error("❌ Error conectando a la base de datos:", err));
