@@ -1,6 +1,6 @@
 
 const Canvas = require('canvas');
-// Para q se haga la tarjeta creo
+// Para q se haga la tarjeta
 async function generateLevelCard(user, levelData) {
   const canvas = Canvas.createCanvas(700, 250);
   const ctx = canvas.getContext('2d');

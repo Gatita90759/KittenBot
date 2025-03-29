@@ -1,7 +1,7 @@
 
 const mongoose = require("mongoose");
 
-// Eto e, idk x2 XDDD
+// Eto e, idk x2
 
 const levelSchema = new mongoose.Schema({
   userID: { type: String, required: true },

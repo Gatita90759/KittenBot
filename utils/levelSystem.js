@@ -2,7 +2,7 @@
 const Level = require('../models/level.js');
 const { calculateNextLevelXP } = require('./levelCard.js');
 
-//esto idk, no entenderXD
+//esto idk, no entender
 
 async function addXP(userId, guildId, amount) {
   let userLevel = await Level.findOne({ userID: userId, guildID: guildId });
