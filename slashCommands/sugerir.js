@@ -11,26 +11,55 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    const sugerencia = interaction.options.getString('sugerencia');
-    
-    const embed = new EmbedBuilder()
-      .setTitle('📝 Nueva Sugerencia')
-      .setDescription(sugerencia)
-      .setColor(0x3498DB)
-      .setAuthor({
-        name: interaction.user.tag,
-        iconURL: interaction.user.displayAvatarURL()
-      })
-      .setTimestamp()
-      .setFooter({ text: '💡 Reacciona para votar' });
+    try {
+      const sugerencia = interaction.options.getString('sugerencia');
+      
+      const embed = new EmbedBuilder()
+        .setTitle('📝 Nueva Sugerencia')
+        .setDescription(sugerencia)
+        .setColor(0x3498DB)
+        .setAuthor({
+          name: interaction.user.tag,
+          iconURL: interaction.user.displayAvatarURL()
+        })
+        .setTimestamp()
+        .setFooter({ text: '💡 Reacciona para votar' });
 
-    const mensaje = await interaction.reply({ 
-      embeds: [embed],
-      fetchReply: true
-    });
+      // Si la interacción ya fue diferida, editamos la respuesta
+      if (interaction.deferred) {
+        const mensaje = await interaction.editReply({ 
+          embeds: [embed],
+          fetchReply: true
+        });
 
-    // Agregar reacciones para votar
-    await mensaje.react('👍');
-    await mensaje.react('👎');
+        // Agregar reacciones para votar
+        await mensaje.react('👍');
+        await mensaje.react('👎');
+      } else {
+        // Si no fue diferida, respondemos normalmente
+        const mensaje = await interaction.reply({ 
+          embeds: [embed],
+          fetchReply: true
+        });
+
+        // Agregar reacciones para votar
+        await mensaje.react('👍');
+        await mensaje.react('👎');
+      }
+    } catch (error) {
+      console.error('Error en comando sugerir:', error);
+      
+      if (interaction.deferred) {
+        await interaction.editReply({ 
+          content: 'Hubo un error al procesar tu sugerencia. Por favor, inténtalo de nuevo.',
+          ephemeral: true 
+        });
+      } else {
+        await interaction.reply({ 
+          content: 'Hubo un error al procesar tu sugerencia. Por favor, inténtalo de nuevo.',
+          ephemeral: true 
+        });
+      }
+    }
   }
 };

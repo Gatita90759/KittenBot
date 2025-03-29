@@ -161,21 +161,36 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.slashCommands.get(interaction.commandName);
-  if (!command) return;
+  if (!command) {
+    await interaction.reply({ 
+      content: 'Este comando no existe o no está disponible.',
+      ephemeral: true 
+    });
+    return;
+  }
 
   try {
+    // Defer the reply to prevent timeout
+    await interaction.deferReply();
     await command.execute(interaction);
   } catch (error) {
     console.error(`Error al ejecutar el comando slash ${interaction.commandName}:`, error);
-    const replyContent = {
-      content: 'Hubo un error al ejecutar el comando.',
+    
+    const errorMessage = {
+      content: 'Hubo un error al ejecutar el comando. Por favor, inténtalo de nuevo.',
       ephemeral: true
     };
     
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(replyContent);
-    } else {
-      await interaction.reply(replyContent);
+    try {
+      if (interaction.deferred) {
+        await interaction.editReply(errorMessage);
+      } else if (interaction.replied) {
+        await interaction.followUp(errorMessage);
+      } else {
+        await interaction.reply(errorMessage);
+      }
+    } catch (followUpError) {
+      console.error('Error al enviar mensaje de error:', followUpError);
     }
   }
 });
