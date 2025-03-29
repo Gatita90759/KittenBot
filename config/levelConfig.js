@@ -2,7 +2,7 @@
 const levelConfig = {
   // Configuración de XP
   xp: {
-    min: 15,           // XP mínimo por mensaje
+    min: 5,           // XP mínimo por mensaje
     max: 25,           // XP máximo por mensaje
     cooldown: 60000,   // Tiempo entre mensajes para ganar XP (en ms)
     baseXP: 100,       // XP base para nivel 1
