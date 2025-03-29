@@ -1,12 +1,13 @@
-
 const Level = require('../models/level.js');
 const { calculateNextLevelXP } = require('./levelCard.js');
+const levelConfig = require('../config/levelConfig.js');
 
-//esto idk, no entender
-
-async function addXP(userId, guildId, amount) {
+async function addXP(userId, guildId, user) {
+  const amount = Math.floor(
+    Math.random() * (levelConfig.xp.max - levelConfig.xp.min + 1) + levelConfig.xp.min
+  );
   let userLevel = await Level.findOne({ userID: userId, guildID: guildId });
-  
+
   if (!userLevel) {
     userLevel = await Level.create({
       userID: userId,
