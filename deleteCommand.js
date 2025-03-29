@@ -1,23 +1,24 @@
+require('dotenv').config(); // Si usas dotenv para cargar variables de entorno
 
 const { REST, Routes } = require('discord.js');
-const config = require('./config.js');
+const config = require('./config'); // Asegúrate de que config.TOKEN y config.CLIENT_ID estén bien cargados
+
+// Convertir GUILD_ID en un array
+const GUILD_IDS = process.env.GUILD_ID.split(',').map(id => id.trim());
 
 const rest = new REST({ version: '10' }).setToken(config.TOKEN);
 
 (async () => {
-    try {
-        console.log('Eliminando comando específico...');
-        const commands = await rest.get(Routes.applicationCommands(config.CLIENT_ID));
+  try {
+    console.log(`Eliminando comandos en ${GUILD_IDS.length} servidores...`);
 
-        const commandToDelete = commands.find(cmd => cmd.name === 'active-dev-badge');
-
-        if (commandToDelete) {
-            await rest.delete(Routes.applicationCommand(config.CLIENT_ID, commandToDelete.id));
-            console.log(`Comando /active-dev-badge eliminado.`);
-        } else {
-            console.log('No se encontró el comando.');
-        }
-    } catch (error) {
-        console.error(error);
+    for (const guildId of GUILD_IDS) {
+      await rest.put(Routes.applicationGuildCommands(config.CLIENT_ID, guildId), { body: [] });
+      console.log(`Comandos eliminados en el servidor ${guildId}`);
     }
+
+    console.log('Comandos eliminados correctamente en todos los servidores.');
+  } catch (error) {
+    console.error('Error al eliminar comandos:', error);
+  }
 })();

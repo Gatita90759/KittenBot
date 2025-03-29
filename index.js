@@ -3,10 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, IntentsBitField, Collection } = require('discord.js');
 const config = require('./config.js');
+const { QuickDB } = require('quick.db');
+const db = new QuickDB();
 
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://<Miau>:MupfWNCLUYOyAtlz>@cluster0.hdgpj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+mongoose.connect(process.env.MONGODB_URI, {
   retryWrites: true,
   w: "majority"
 }).then(() => {
@@ -59,9 +61,51 @@ if (fs.existsSync(slashCommandsPath)) {
   }
 }
 
-// Handle messages for regular commands
-client.on('messageCreate', message => {
-  if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+// Handle messages for regular commands and XP
+client.on('messageCreate', async message => {
+  // Skip if message is from a bot
+  if (message.author.bot) return;
+
+  // Handle XP system
+  if (!message.content.startsWith(config.prefix)) {
+    try {
+      const guildId = message.guild.id;
+      const userId = message.author.id;
+      const key = `level_${guildId}_${userId}`;
+      
+      // Get existing data
+      const existingData = await db.get(key) || { xp: 0, level: 1 };
+      
+      // Calculate new XP
+      const xpGain = Math.floor(Math.random() * 10) + 15;
+      const newXP = existingData.xp + xpGain;
+      
+      // Check for level up
+      const xpNeeded = existingData.level * 100;
+      let newLevel = existingData.level;
+      let finalXP = newXP;
+      
+      if (newXP >= xpNeeded) {
+        newLevel += 1;
+        finalXP = 0;
+        message.channel.send(`¡Felicidades ${message.author}! Has subido al nivel ${newLevel} \<:ohsi:1343031913333657662>`);
+      }
+      
+      // Save new data
+      const newData = {
+        xp: finalXP,
+        level: newLevel
+      };
+      
+      await db.set(key, newData);
+      console.log(`XP actualizado para ${message.author.username}: Nivel ${newLevel}, XP ${finalXP}`);
+    } catch (error) {
+      console.error('Error al actualizar XP:', error);
+    }
+  }
+
+  // Handle commands
+  if (!message.content.startsWith(config.prefix)) return;
 
   const args = message.content.slice(config.prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
@@ -88,20 +132,25 @@ client.on('ready', async () => {
       return;
     }
 
-    const guild = client.guilds.cache.get(config.GUILD_ID);
-    if (!guild) {
-      console.warn(`⚠️ No se encontró el servidor con ID ${config.GUILD_ID}. Verifique GUILD_ID en su .env`);
-      console.log("Servidores disponibles:");
-      client.guilds.cache.forEach(g => {
-        console.log(`- ${g.name} (ID: ${g.id})`);
-      });
-      return;
+    const guildIds = config.GUILD_ID.split(',').map(id => id.trim());
+    
+    for (const guildId of guildIds) {
+      const guild = client.guilds.cache.get(guildId);
+      if (!guild) {
+        console.warn(`⚠️ No se encontró el servidor con ID ${guildId}`);
+        continue;
+      }
+      
+      console.log(`Registrando comandos slash en el servidor: ${guild.name}`);
+      const commands = Array.from(client.slashCommands.values()).map(cmd => cmd.data);
+      await guild.commands.set(commands);
+      console.log(`✅ Comandos slash registrados correctamente en ${guild.name}`);
     }
 
-    console.log(`Registrando comandos slash en el servidor: ${guild.name}`);
-    const commands = Array.from(client.slashCommands.values()).map(cmd => cmd.data);
-    await guild.commands.set(commands);
-    console.log('Comandos slash registrados correctamente');
+    console.log("Servidores disponibles:");
+    client.guilds.cache.forEach(g => {
+      console.log(`- ${g.name} (ID: ${g.id})`);
+    });
   } catch (error) {
     console.error('Error al registrar comandos slash:', error);
   }
