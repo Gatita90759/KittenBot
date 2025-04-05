@@ -25,4 +25,4 @@ author = 35899397
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm start"
+args = "node deploy-commands.js && node index.js"
