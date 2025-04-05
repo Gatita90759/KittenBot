@@ -14,7 +14,21 @@ const levelConfig = {
   roles: {
     5: "ID_ROL_NIVEL_5",
     10: "ID_ROL_NIVEL_10",
-    20: "ID_ROL_NIVEL_20"
+    15: "ID_ROL_NIVEL_15",
+    20: "ID_ROL_NIVEL_20",
+    25: "ID_ROL_NIVEL_25",
+    30: "ID_ROL_NIVEL_30",
+    50: "ID_ROL_NIVEL_50"
+  },
+  
+  rewards: {
+    5: "¡Desbloqueas el canal especial de niveles! 🌟",
+    10: "¡Ahora puedes usar comandos especiales! 🎮",
+    15: "¡Nuevo color de rol disponible! 🎨",
+    20: "¡Acceso al canal VIP! 👑",
+    25: "¡Multiplicador de XP x1.5! ⚡",
+    30: "¡Insignia especial en tu perfil! 🏆",
+    50: "¡Rol de Leyenda desbloqueado! 🌈"
   },
   
   // Mensajes personalizados

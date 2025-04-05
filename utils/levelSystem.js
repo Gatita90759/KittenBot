@@ -3,9 +3,23 @@ const { calculateNextLevelXP } = require('./levelCard.js');
 const levelConfig = require('../config/levelConfig.js');
 
 async function addXP(userId, guildId, user) {
-  const amount = Math.floor(
+  let amount = Math.floor(
     Math.random() * (levelConfig.xp.max - levelConfig.xp.min + 1) + levelConfig.xp.min
   );
+  
+  // Bonificaciones por actividad
+  const hour = new Date().getHours();
+  if (hour >= 22 || hour <= 6) amount *= 1.5; // Bonus nocturno
+  
+  // Bonus por días consecutivos de actividad
+  if (userLevel.dailyStreak > 0) {
+    amount *= (1 + (userLevel.dailyStreak * 0.1)); // 10% extra por día consecutivo
+  }
+  
+  // Bonus por eventos especiales (fines de semana)
+  if (new Date().getDay() === 6 || new Date().getDay() === 0) {
+    amount *= 2; // Doble XP en fines de semana
+  }
   let userLevel = await Level.findOne({ userID: userId, guildID: guildId });
 
   if (!userLevel) {
