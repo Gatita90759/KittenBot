@@ -17,7 +17,7 @@ deploymentTarget = "cloudrun"
 ignorePorts = false
 
 [workflows]
-runButton = "Run Bot"
+runButton = "Start Bot"
 
 [[workflows.workflow]]
 name = "Run Bot"
@@ -26,3 +26,37 @@ author = 35899397
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "/nix/store/rrz8cqhldyl17bbs60g7d8vbaadkxc40-nodejs-20.18.1-wrapped/bin/node deploy-commands.js && /nix/store/rrz8cqhldyl17bbs60g7d8vbaadkxc40-nodejs-20.18.1-wrapped/bin/node index.js"
+
+[[workflows.workflow]]
+name = "Initialize and Run"
+author = 35899397
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node deploy-commands.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow]]
+name = "Start Bot"
+author = 35899397
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "/nix/store/rrz8cqhldyl17bbs60g7d8vbaadkxc40-nodejs-20.18.1-wrapped/bin/npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "/nix/store/rrz8cqhldyl17bbs60g7d8vbaadkxc40-nodejs-20.18.1-wrapped/bin/node deploy-commands.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "/nix/store/rrz8cqhldyl17bbs60g7d8vbaadkxc40-nodejs-20.18.1-wrapped/bin/node index.js"
