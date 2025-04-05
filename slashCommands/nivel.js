@@ -6,7 +6,7 @@ const Level = require('../models/level.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('nivel')
-    .setDescription('Muestra tu nivel actual o el de otro usuario')
+    .setDescription('Muestra tu tarjeta de nivel')
     .addUserOption(option => 
       option
         .setName('usuario')
@@ -14,6 +14,7 @@ module.exports = {
         .setRequired(false)),
 
   async execute(interaction) {
+    await interaction.deferReply();
     try {
       const targetUser = interaction.options.getUser('usuario') || interaction.user;
       const levelData = await Level.findOne({ 
