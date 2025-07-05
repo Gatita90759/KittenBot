@@ -19,6 +19,4 @@ module.exports = {
     // Enviar el embed
     message.channel.send({ embeds: [embed] });
   }
-};;
-  },
 };

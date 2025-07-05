@@ -49,6 +49,28 @@ module.exports = {
     } catch (error) {
       console.error('Error en comando sugerir:', error);
       
+      const errorMessage = {
+        content: 'Hubo un error al procesar tu sugerencia. Inténtalo de nuevo.',
+        ephemeral: true
+      };
+      
+      if (interaction.deferred) {
+        await interaction.editReply(errorMessage);
+      } else {
+        await interaction.reply(errorMessage);
+      }
+    }
+  }
+};ue
+        });
+
+        // Agregar reacciones para votar
+        await mensaje.react('👍');
+        await mensaje.react('👎');
+      }
+    } catch (error) {
+      console.error('Error en comando sugerir:', error);
+      
       if (interaction.deferred) {
         await interaction.editReply({ 
           content: 'Hubo un error al procesar tu sugerencia. Por favor, inténtalo de nuevo.',

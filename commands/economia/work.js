@@ -34,5 +34,3 @@ module.exports = {
     message.reply(`Trabajaste y ganaste ${amount} monedas. Ahora tienes ${userData.balance}.`);
   }
 };
-  }
-};
