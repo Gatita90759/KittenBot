@@ -15,14 +15,3 @@ language = "nodejs"
 run = ["node", "index.js"]
 deploymentTarget = "cloudrun"
 ignorePorts = false
-
-[workflows]
-runButton = "Run Bot"
-
-[[workflows.workflow]]
-name = "Run Bot"
-author = 35899397
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "/nix/store/lyx73qs96hfazl77arnwllwckq9dy012-nodejs-20.18.1-wrapped/bin/node deploy-commands.js && /nix/store/lyx73qs96hfazl77arnwllwckq9dy012-nodejs-20.18.1-wrapped/bin/node index.js"
