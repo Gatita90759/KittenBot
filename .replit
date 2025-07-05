@@ -25,4 +25,4 @@ author = 35899397
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node deploy-commands.js && node index.js"
+args = "/nix/store/lyx73qs96hfazl77arnwllwckq9dy012-nodejs-20.18.1-wrapped/bin/node deploy-commands.js && /nix/store/lyx73qs96hfazl77arnwllwckq9dy012-nodejs-20.18.1-wrapped/bin/node index.js"
