@@ -1,4 +1,4 @@
-const Economy = require("../models/economy.js");
+const Economy = require("../../models/economy.js");
 
 module.exports = {
   name: "balance",

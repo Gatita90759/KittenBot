@@ -1,4 +1,4 @@
-const Economy = require("../models/economy.js");
+const Economy = require("../../models/economy.js");
 
 module.exports = {
   name: "work",
@@ -18,7 +18,7 @@ module.exports = {
     // Verificar si el usuario ha trabajado recientemente
     const now = Date.now();
     if (userData.lastWorkedAt && now - userData.lastWorkedAt < cooldownWork) {
-      const remainingTime = cooldowWork - (now - userData.lastWorkedAt);
+      const remainingTime = cooldownWork - (now - userData.lastWorkedAt);
       const minutes = Math.floor(remainingTime / 60000); // Convertir a minutos
       return message.reply(`Debes esperar ${minutes} minutos para volver a trabajar.`);
     }
@@ -32,5 +32,7 @@ module.exports = {
     await userData.save();
 
     message.reply(`Trabajaste y ganaste ${amount} monedas. Ahora tienes ${userData.balance}.`);
+  }
+};
   }
 };
