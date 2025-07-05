@@ -8,12 +8,17 @@ const db = new QuickDB();
 
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODB_URI, {
-  retryWrites: true,
-  w: "majority"
-}).then(() => {
-  console.log("✅ Conectado a la base de datos.");
-}).catch(err => console.error("❌ Error conectando a la base de datos:", err));
+// Only connect to MongoDB if MONGODB_URI is provided
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI, {
+    retryWrites: true,
+    w: "majority"
+  }).then(() => {
+    console.log("✅ Conectado a la base de datos.");
+  }).catch(err => console.error("❌ Error conectando a la base de datos:", err));
+} else {
+  console.warn("⚠️ MONGODB_URI no está definido. La funcionalidad de economía no estará disponible.");
+}
 
 const client = new Client({ 
   intents: [
