@@ -1,6 +1,6 @@
 
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { obtenerDatos } = require('../utils/simpleXP');
+const { obtenerDatos } = require('../../utils/simpleXP');
 
 module.exports = {
   data: new SlashCommandBuilder()
