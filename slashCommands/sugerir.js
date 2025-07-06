@@ -1,4 +1,3 @@
-
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -13,7 +12,7 @@ module.exports = {
   async execute(interaction) {
     try {
       const sugerencia = interaction.options.getString('sugerencia');
-      
+
       const embed = new EmbedBuilder()
         .setTitle('📝 Nueva Sugerencia')
         .setDescription(sugerencia)
@@ -48,17 +47,16 @@ module.exports = {
       }
     } catch (error) {
       console.error('Error en comando sugerir:', error);
-      
+
+      const errorMessage = {
+        content: 'Hubo un error al procesar tu sugerencia. Inténtalo de nuevo.',
+        ephemeral: true
+      };
+
       if (interaction.deferred) {
-        await interaction.editReply({ 
-          content: 'Hubo un error al procesar tu sugerencia. Por favor, inténtalo de nuevo.',
-          ephemeral: true 
-        });
+        await interaction.editReply(errorMessage);
       } else {
-        await interaction.reply({ 
-          content: 'Hubo un error al procesar tu sugerencia. Por favor, inténtalo de nuevo.',
-          ephemeral: true 
-        });
+        await interaction.reply(errorMessage);
       }
     }
   }

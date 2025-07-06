@@ -1,15 +1,17 @@
 
 { pkgs }: {
   deps = [
-    pkgs.nodejs-20_x
-    pkgs.nodePackages.typescript-language-server
-    pkgs.uuid
-    pkgs.yarn
-    pkgs.replitPackages.jest
+    pkgs.nodejs_20
+    pkgs.libuuid
+    pkgs.libGL
+    pkgs.libGLU
+    pkgs.freetype
+    pkgs.fontconfig
     pkgs.cairo
     pkgs.pango
-    pkgs.libjpeg
-    pkgs.giflib
-    pkgs.librsvg
+    pkgs.pixman
+    pkgs.pkg-config
+    pkgs.python3
+    pkgs.makeWrapper
   ];
 }
