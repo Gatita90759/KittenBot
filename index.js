@@ -15,18 +15,30 @@ const client = new Client({
 // Solo una colección para comandos slash (más moderno)
 client.slashCommands = new Collection();
 
-// Cargar comandos slash
+// Cargar comandos slash desde categorías
 const slashCommandsPath = './slashCommands';
-if (fs.existsSync(slashCommandsPath)) {
-  const slashCommandFiles = fs.readdirSync(slashCommandsPath).filter(file => file.endsWith('.js'));
-  for (const file of slashCommandFiles) {
-    const command = require(`${slashCommandsPath}/${file}`);
+const categorias = ['utilidad', 'diversión', 'información', 'moderación'];
 
-    if (command.data && command.execute) {
-      client.slashCommands.set(command.data.name, command);
-      console.log(`✅ Comando ${command.data.name} cargado`);
+// Función para cargar comandos de una carpeta
+function cargarComandosDeCategoria(categoria) {
+  const categoriaPath = `${slashCommandsPath}/${categoria}`;
+  if (fs.existsSync(categoriaPath)) {
+    const commandFiles = fs.readdirSync(categoriaPath).filter(file => file.endsWith('.js'));
+    for (const file of commandFiles) {
+      const command = require(`${categoriaPath}/${file}`);
+      if (command.data && command.execute) {
+        // Agregar la categoría al comando
+        command.categoria = categoria;
+        client.slashCommands.set(command.data.name, command);
+        console.log(`✅ Comando ${command.data.name} cargado [${categoria}]`);
+      }
     }
   }
+}
+
+// Cargar comandos de todas las categorías
+for (const categoria of categorias) {
+  cargarComandosDeCategoria(categoria);
 }
 
 // Sistema XP simple - solo en mensajes normales
